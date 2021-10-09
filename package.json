@@ -1,0 +1,24 @@
+{
+  "name": "cloudense",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "npx tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Thomas Karl <thomas@xciteit.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3.33.0",
+    "@aws-sdk/client-lambda": "^3.33.0",
+    "@aws-sdk/credential-providers": "^3.33.0",
+    "@aws-sdk/util-credentials": "^3.32.0",
+    "aws-sdk-v3-proxy": "^2.0.7"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.3",
+    "ts-node": "^10.2.1",
+    "@types/node": "^16.9.6",
+    "minimist": "^1.2.5"
+  }
+}

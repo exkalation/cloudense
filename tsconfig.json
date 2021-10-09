@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "strict": false,
+    "alwaysStrict": false,
+    "incremental": true,
+    "target": "es6",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "noEmitHelpers": true,
+    "declaration": true,
+    "outDir": "dist/es",
+    "declarationDir": "dist/types"
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
