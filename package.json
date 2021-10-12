@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "build": "npx tsc",
+    "clean": "npx rimraf ./dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Thomas Karl <thomas@xciteit.com>",
