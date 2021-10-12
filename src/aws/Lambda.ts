@@ -22,7 +22,7 @@ export enum Publish {
   Force = "FORCE",
 }
 
-export const deployFunction = (
+export const deployFunction = async (
   config: Config,
   functionName: string,
   description: string,
@@ -47,14 +47,15 @@ export const deployFunction = (
 
 const publishVersion =
   (client: LambdaClient, description: string) =>
-  async (newFunctionData: GetFunctionConfigurationCommandOutput) => {
+  async (
+    newFunctionData: GetFunctionConfigurationCommandOutput
+  ): Promise<string> => {
     const publishVersionCommand = new PublishVersionCommand({
       FunctionName: newFunctionData.FunctionName,
       RevisionId: newFunctionData.RevisionId,
       Description: description,
     });
     return client.send(publishVersionCommand).then((newFunctionData) => {
-      console.log(newFunctionData);
       console.log("Function published. Version", newFunctionData.Version);
       return newFunctionData.Version;
     });
@@ -62,7 +63,15 @@ const publishVersion =
 
 const deployCode =
   (client: LambdaClient) =>
-  async ([fileBuffer, lastFunctionData]) => {
+  async ([fileBuffer, lastFunctionData]: [
+    Buffer,
+    GetFunctionConfigurationCommandOutput
+  ]): Promise<
+    [
+      GetFunctionConfigurationCommandOutput,
+      GetFunctionConfigurationCommandOutput
+    ]
+  > => {
     const updateCodeCommand = new UpdateFunctionCodeCommand({
       FunctionName: lastFunctionData.FunctionName,
       ZipFile: fileBuffer,
@@ -76,9 +85,9 @@ const deployCode =
 
 const publishOrReject =
   (publish: Publish) =>
-  ([
-    lastFunctionData,
-    newFunctionData,
+  async ([lastFunctionData, newFunctionData]: [
+    GetFunctionConfigurationCommandOutput,
+    GetFunctionConfigurationCommandOutput
   ]): Promise<GetFunctionConfigurationCommandOutput> => {
     if (publish === Publish.Never) {
       return Promise.reject(Publish.Never);
@@ -100,7 +109,6 @@ const checkFunction =
       FunctionName: functionName,
     });
     return client.send(checkFunctionCommand).then((response) => {
-      console.log(response);
       console.log(
         "Found function. Version",
         response.Version,

@@ -27,24 +27,23 @@ export interface CacheBehaviorEventDefinition {
   eventType: string;
 }
 
-export const getDistributionStatus = (
+export const getDistributionStatus = async (
   config: Config,
   distributionId: string
-) => {
+): Promise<boolean> => {
   const client: CloudFrontClient = getCloudFrontClient(config);
-  console.log("checking status");
   return checkStatus(distributionId, client, 10);
 };
 
-export const deployLamdaEdgeFunction = (
+export const deployLamdaEdgeFunction = async (
   config: Config,
   distributionId: string,
   target: CacheBehaviorEventDefinition,
   arnWithoutVersion: string,
   lambdaFunctionVersion: string
-) => {
+): Promise<boolean> => {
   const client: CloudFrontClient = getCloudFrontClient(config);
-  getDistributionConfig(distributionId, client)
+  return getDistributionConfig(distributionId, client)
     .then(
       updateCacheBehaviorLambdaFunctionVersion(
         target,
@@ -54,25 +53,27 @@ export const deployLamdaEdgeFunction = (
     )
     .then(deployDistributionConfig(distributionId, client))
     .then((response) => {
-      console.log("New distribution config deployed!", response);
+      console.log("New distribution config deployed!");
       console.log("Waiting for deployment to be replicated to all edge nodes.");
       return checkStatus(distributionId, client, 100, 5000);
     })
     .then((deployed) => {
       if (deployed) {
         console.log("Distribution was deployed successfully!");
+        return true;
       } else {
         console.log("Distribution is still not deployed. Giving up.");
+        return false;
       }
     });
 };
 
-const checkStatus = (
+const checkStatus = async (
   distributionId: string,
   client: CloudFrontClient,
   tries: number = 1,
   interval: number = 5000
-) => {
+): Promise<boolean> => {
   const command = new GetDistributionCommand({ Id: distributionId });
   return client.send(command).then((response: GetDistributionCommandOutput) => {
     if (tries <= 0) {
@@ -97,7 +98,7 @@ const checkStatus = (
 
 const deployDistributionConfig =
   (distributionId: string, client: CloudFrontClient) =>
-  ([eTag, distributionConfig]: [
+  async ([eTag, distributionConfig]: [
     string,
     DistributionConfig
   ]): Promise<UpdateDistributionCommandOutput> => {
@@ -118,21 +119,12 @@ const updateCacheBehaviorLambdaFunctionVersion =
   (
     response: GetDistributionConfigCommandOutput
   ): [string, DistributionConfig] => {
-    console.log("GetDistributionConfigCommandOutput", response);
     const distributionConfig = response.DistributionConfig;
-    console.log(
-      "LAMBDA ASSOCIATIONS BEFORE",
-      distributionConfig.CacheBehaviors.Items[0].LambdaFunctionAssociations
-    );
     distributionConfig.CacheBehaviors = updateCacheBehaviors(
       target,
       arnWithoutVersion,
       lambdaFunctionVersion,
       response.DistributionConfig.CacheBehaviors
-    );
-    console.log(
-      "LAMBDA ASSOCIATIONS AFTER",
-      distributionConfig.CacheBehaviors.Items[0].LambdaFunctionAssociations
     );
     return [response.ETag, distributionConfig];
   };
@@ -196,7 +188,7 @@ const updateLambdaFunctionAssociation =
     return item;
   };
 
-const getDistributionConfig = (
+const getDistributionConfig = async (
   distributionId: string,
   client: CloudFrontClient
 ): Promise<GetDistributionConfigCommandOutput> => {
