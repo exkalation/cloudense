@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "strict": false,
+    "strict": true,
     "alwaysStrict": false,
     "incremental": true,
     "target": "es6",

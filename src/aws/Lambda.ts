@@ -55,7 +55,11 @@ const publishVersion =
       RevisionId: newFunctionData.RevisionId,
       Description: description,
     });
+
     return client.send(publishVersionCommand).then((newFunctionData) => {
+      if (!newFunctionData.Version) {
+        throw "Publish version failed: Could not retrieve new version";
+      }
       console.log("Function published. Version", newFunctionData.Version);
       return newFunctionData.Version;
     });

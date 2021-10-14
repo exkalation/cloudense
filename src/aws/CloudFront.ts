@@ -11,6 +11,7 @@ import {
   UpdateDistributionCommand,
   UpdateDistributionCommandOutput,
   GetDistributionCommandOutput,
+  CloudFrontClientConfig,
 } from "@aws-sdk/client-cloudfront";
 import * as Auth from "./Auth";
 import * as Proxy from "./Proxy";
@@ -52,7 +53,7 @@ export const deployLamdaEdgeFunction = async (
       )
     )
     .then(deployDistributionConfig(distributionId, client))
-    .then((response) => {
+    .then(() => {
       console.log("New distribution config deployed!");
       console.log("Waiting for deployment to be replicated to all edge nodes.");
       return checkStatus(distributionId, client, 100, 5000);
@@ -79,12 +80,16 @@ const checkStatus = async (
     if (tries <= 0) {
       return Promise.resolve(false);
     }
-    if (response.Distribution.Status === "Deployed") {
+    const status: string =
+      response && response.Distribution && response.Distribution.Status
+        ? response.Distribution.Status
+        : "Could not read status";
+    if (status === "Deployed") {
       return Promise.resolve(true);
     }
     console.log(
       "Distribution status:",
-      response.Distribution.Status,
+      status,
       "(Checking again in " + interval + "ms. " + tries + " tries left.)"
     );
     return new Promise((resolve) =>
@@ -99,8 +104,8 @@ const checkStatus = async (
 const deployDistributionConfig =
   (distributionId: string, client: CloudFrontClient) =>
   async ([eTag, distributionConfig]: [
-    string,
-    DistributionConfig
+    string | undefined,
+    DistributionConfig | undefined
   ]): Promise<UpdateDistributionCommandOutput> => {
     const command = new UpdateDistributionCommand({
       Id: distributionId,
@@ -118,14 +123,16 @@ const updateCacheBehaviorLambdaFunctionVersion =
   ) =>
   (
     response: GetDistributionConfigCommandOutput
-  ): [string, DistributionConfig] => {
+  ): [string | undefined, DistributionConfig | undefined] => {
     const distributionConfig = response.DistributionConfig;
-    distributionConfig.CacheBehaviors = updateCacheBehaviors(
-      target,
-      arnWithoutVersion,
-      lambdaFunctionVersion,
-      response.DistributionConfig.CacheBehaviors
-    );
+    if (distributionConfig && distributionConfig.CacheBehaviors) {
+      distributionConfig.CacheBehaviors = updateCacheBehaviors(
+        target,
+        arnWithoutVersion,
+        lambdaFunctionVersion,
+        distributionConfig.CacheBehaviors
+      );
+    }
     return [response.ETag, distributionConfig];
   };
 
@@ -135,7 +142,13 @@ const updateCacheBehaviors = (
   lambdaFunctionVersion: string,
   items: CacheBehaviors
 ): CacheBehaviors => {
-  if (items.Quantity > 0 && items.Items && items.Items.length > 0) {
+  if (
+    items &&
+    items.Quantity &&
+    items.Quantity > 0 &&
+    items.Items &&
+    items.Items.length > 0
+  ) {
     items.Items = items.Items.map(
       updateCacheBehavior(target, arnWithoutVersion, lambdaFunctionVersion)
     );
@@ -152,7 +165,8 @@ const updateCacheBehavior =
   (item: CacheBehavior): CacheBehavior => {
     if (
       item.PathPattern === target.pathPattern &&
-      item.TargetOriginId === target.targetOrigin
+      item.TargetOriginId === target.targetOrigin &&
+      item.LambdaFunctionAssociations
     ) {
       item.LambdaFunctionAssociations = updateLambdaFunctionAssociations(
         arnWithoutVersion,
@@ -168,7 +182,13 @@ const updateLambdaFunctionAssociations = (
   lambdaFunctionVersion: string,
   items: LambdaFunctionAssociations
 ): LambdaFunctionAssociations => {
-  if (items.Quantity > 0 && items.Items && items.Items.length > 0) {
+  if (
+    items &&
+    items.Quantity &&
+    items.Quantity > 0 &&
+    items.Items &&
+    items.Items.length > 0
+  ) {
     items.Items = items.Items.map(
       updateLambdaFunctionAssociation(arnWithoutVersion, lambdaFunctionVersion)
     );
@@ -197,7 +217,7 @@ const getDistributionConfig = async (
 };
 
 const getCloudFrontClient = (config: Config): CloudFrontClient => {
-  const clientConfig = {
+  const clientConfig: CloudFrontClientConfig = {
     region: config.region,
     credentials: Auth.getCredentials(config.auth),
   };
