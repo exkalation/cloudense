@@ -1,6 +1,6 @@
 import { fromIni } from "@aws-sdk/credential-providers";
 import { SourceProfileInit } from "@aws-sdk/util-credentials";
-import { CredentialProvider } from "@aws-sdk/types/dist/types/credentials";
+import { CredentialProvider } from "@aws-sdk/types";
 
 export interface Config {
   type: string;
