@@ -9,6 +9,10 @@
   },
   "author": "Thomas Karl <thomas@xciteit.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/exkalation/cloudense.git"
+  },
   "dependencies": {
     "@aws-sdk/client-cloudfront": "^3.33.0",
     "@aws-sdk/client-lambda": "^3.33.0",
