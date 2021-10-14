@@ -14,10 +14,10 @@
     "url": "https://github.com/exkalation/cloudense.git"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudfront": "^3.33.0",
-    "@aws-sdk/client-lambda": "^3.33.0",
-    "@aws-sdk/credential-providers": "^3.33.0",
-    "@aws-sdk/util-credentials": "^3.32.0",
+    "@aws-sdk/client-cloudfront": "^3.36.1",
+    "@aws-sdk/client-lambda": "^3.36.1",
+    "@aws-sdk/credential-providers": "^3.36.1",
+    "@aws-sdk/util-credentials": "^3.36.0",
     "aws-sdk-v3-proxy": "^2.0.7"
   },
   "devDependencies": {
