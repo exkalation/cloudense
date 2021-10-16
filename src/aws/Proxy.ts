@@ -10,9 +10,6 @@ export interface Options {
   httpsOnly: boolean;
 }
 
-export const proxyClient = <T>(
-  client: ClientWithConfig<T>,
-  proxy: Config
-): T => {
+export const proxyClient = <T>(client: ClientWithConfig<T>, proxy: Config): T => {
   return proxy.enabled ? addProxyToClient(client, proxy.options) : client;
 };

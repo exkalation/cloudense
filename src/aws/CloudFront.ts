@@ -28,10 +28,7 @@ export interface CacheBehaviorEventDefinition {
   eventType: string;
 }
 
-export const getDistributionStatus = async (
-  config: Config,
-  distributionId: string
-): Promise<boolean> => {
+export const getDistributionStatus = async (config: Config, distributionId: string): Promise<boolean> => {
   const client: CloudFrontClient = getCloudFrontClient(config);
   return checkStatus(distributionId, client, 10);
 };
@@ -45,13 +42,7 @@ export const deployLamdaEdgeFunction = async (
 ): Promise<boolean> => {
   const client: CloudFrontClient = getCloudFrontClient(config);
   return getDistributionConfig(distributionId, client)
-    .then(
-      updateCacheBehaviorLambdaFunctionVersion(
-        target,
-        arnWithoutVersion,
-        lambdaFunctionVersion
-      )
-    )
+    .then(updateCacheBehaviorLambdaFunctionVersion(target, arnWithoutVersion, lambdaFunctionVersion))
     .then(deployDistributionConfig(distributionId, client))
     .then(() => {
       console.log("New distribution config deployed!");
@@ -87,16 +78,9 @@ const checkStatus = async (
     if (status === "Deployed") {
       return Promise.resolve(true);
     }
-    console.log(
-      "Distribution status:",
-      status,
-      "(Checking again in " + interval + "ms. " + tries + " tries left.)"
-    );
+    console.log("Distribution status:", status, "(Checking again in " + interval + "ms. " + tries + " tries left.)");
     return new Promise((resolve) =>
-      setTimeout(
-        () => resolve(checkStatus(distributionId, client, tries - 1, interval)),
-        interval
-      )
+      setTimeout(() => resolve(checkStatus(distributionId, client, tries - 1, interval)), interval)
     );
   });
 };
@@ -116,14 +100,8 @@ const deployDistributionConfig =
   };
 
 const updateCacheBehaviorLambdaFunctionVersion =
-  (
-    target: CacheBehaviorEventDefinition,
-    arnWithoutVersion: string,
-    lambdaFunctionVersion: string
-  ) =>
-  (
-    response: GetDistributionConfigCommandOutput
-  ): [string | undefined, DistributionConfig | undefined] => {
+  (target: CacheBehaviorEventDefinition, arnWithoutVersion: string, lambdaFunctionVersion: string) =>
+  (response: GetDistributionConfigCommandOutput): [string | undefined, DistributionConfig | undefined] => {
     const distributionConfig = response.DistributionConfig;
     if (distributionConfig && distributionConfig.CacheBehaviors) {
       distributionConfig.CacheBehaviors = updateCacheBehaviors(
@@ -142,26 +120,14 @@ const updateCacheBehaviors = (
   lambdaFunctionVersion: string,
   items: CacheBehaviors
 ): CacheBehaviors => {
-  if (
-    items &&
-    items.Quantity &&
-    items.Quantity > 0 &&
-    items.Items &&
-    items.Items.length > 0
-  ) {
-    items.Items = items.Items.map(
-      updateCacheBehavior(target, arnWithoutVersion, lambdaFunctionVersion)
-    );
+  if (items && items.Quantity && items.Quantity > 0 && items.Items && items.Items.length > 0) {
+    items.Items = items.Items.map(updateCacheBehavior(target, arnWithoutVersion, lambdaFunctionVersion));
   }
   return items;
 };
 
 const updateCacheBehavior =
-  (
-    target: CacheBehaviorEventDefinition,
-    arnWithoutVersion: string,
-    lambdaFunctionVersion: string
-  ) =>
+  (target: CacheBehaviorEventDefinition, arnWithoutVersion: string, lambdaFunctionVersion: string) =>
   (item: CacheBehavior): CacheBehavior => {
     if (
       item.PathPattern === target.pathPattern &&
@@ -182,16 +148,8 @@ const updateLambdaFunctionAssociations = (
   lambdaFunctionVersion: string,
   items: LambdaFunctionAssociations
 ): LambdaFunctionAssociations => {
-  if (
-    items &&
-    items.Quantity &&
-    items.Quantity > 0 &&
-    items.Items &&
-    items.Items.length > 0
-  ) {
-    items.Items = items.Items.map(
-      updateLambdaFunctionAssociation(arnWithoutVersion, lambdaFunctionVersion)
-    );
+  if (items && items.Quantity && items.Quantity > 0 && items.Items && items.Items.length > 0) {
+    items.Items = items.Items.map(updateLambdaFunctionAssociation(arnWithoutVersion, lambdaFunctionVersion));
   }
   return items;
 };
@@ -199,10 +157,7 @@ const updateLambdaFunctionAssociations = (
 const updateLambdaFunctionAssociation =
   (arnWithoutVersion: string, lambdaFunctionVersion: string) =>
   (item: LambdaFunctionAssociation): LambdaFunctionAssociation => {
-    if (
-      item.LambdaFunctionARN &&
-      item.LambdaFunctionARN.startsWith(arnWithoutVersion)
-    ) {
+    if (item.LambdaFunctionARN && item.LambdaFunctionARN.startsWith(arnWithoutVersion)) {
       item.LambdaFunctionARN = arnWithoutVersion + ":" + lambdaFunctionVersion;
     }
     return item;

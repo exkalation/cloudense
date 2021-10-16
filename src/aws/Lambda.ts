@@ -47,9 +47,7 @@ export const deployFunction = async (
 
 const publishVersion =
   (client: LambdaClient, description: string) =>
-  async (
-    newFunctionData: GetFunctionConfigurationCommandOutput
-  ): Promise<string> => {
+  async (newFunctionData: GetFunctionConfigurationCommandOutput): Promise<string> => {
     const publishVersionCommand = new PublishVersionCommand({
       FunctionName: newFunctionData.FunctionName,
       RevisionId: newFunctionData.RevisionId,
@@ -67,14 +65,8 @@ const publishVersion =
 
 const deployCode =
   (client: LambdaClient) =>
-  async ([fileBuffer, lastFunctionData]: [
-    Buffer,
-    GetFunctionConfigurationCommandOutput
-  ]): Promise<
-    [
-      GetFunctionConfigurationCommandOutput,
-      GetFunctionConfigurationCommandOutput
-    ]
+  async ([fileBuffer, lastFunctionData]: [Buffer, GetFunctionConfigurationCommandOutput]): Promise<
+    [GetFunctionConfigurationCommandOutput, GetFunctionConfigurationCommandOutput]
   > => {
     const updateCodeCommand = new UpdateFunctionCodeCommand({
       FunctionName: lastFunctionData.FunctionName,
@@ -106,24 +98,23 @@ const publishOrReject =
     return Promise.resolve(newFunctionData);
   };
 
-const checkFunction =
-  (client: LambdaClient) => async (functionName: string) => {
-    console.log("Checking if function exists.");
-    const checkFunctionCommand = new GetFunctionConfigurationCommand({
-      FunctionName: functionName,
-    });
-    return client.send(checkFunctionCommand).then((response) => {
-      console.log(
-        "Found function. Version",
-        response.Version,
-        "RevisionId",
-        response.RevisionId,
-        "CodeSha256",
-        response.CodeSha256
-      );
-      return response;
-    });
-  };
+const checkFunction = (client: LambdaClient) => async (functionName: string) => {
+  console.log("Checking if function exists.");
+  const checkFunctionCommand = new GetFunctionConfigurationCommand({
+    FunctionName: functionName,
+  });
+  return client.send(checkFunctionCommand).then((response) => {
+    console.log(
+      "Found function. Version",
+      response.Version,
+      "RevisionId",
+      response.RevisionId,
+      "CodeSha256",
+      response.CodeSha256
+    );
+    return response;
+  });
+};
 
 const readZipAsBuffer = async (path: string): Promise<Buffer> => {
   console.log("Reading ZIP file...");
