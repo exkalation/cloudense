@@ -9,6 +9,7 @@
     "sourceMap": true,
     "noEmitHelpers": true,
     "declaration": true,
+    "rootDir": "src",
     "outDir": "dist",
     "declarationDir": "dist"
   },
