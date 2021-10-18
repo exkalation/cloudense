@@ -1,5 +1,5 @@
 // currently unused
-import { Config as AuthConfig } from "./Auth";
+import { Config as AuthConfig } from './Auth';
 
 export interface Config {
   region: string;

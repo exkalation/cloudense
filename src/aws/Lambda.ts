@@ -4,11 +4,11 @@ import {
   GetFunctionConfigurationCommandOutput,
   UpdateFunctionCodeCommand,
   PublishVersionCommand,
-} from "@aws-sdk/client-lambda";
-import { Buffer } from "buffer";
-import * as Auth from "./Auth";
-import * as Proxy from "./Proxy";
-import * as fs from "fs/promises";
+} from '@aws-sdk/client-lambda';
+import { Buffer } from 'buffer';
+import * as fs from 'fs/promises';
+import * as Auth from './Auth';
+import * as Proxy from './Proxy';
 
 export interface Config {
   region: string;
@@ -17,9 +17,9 @@ export interface Config {
 }
 
 export enum Publish {
-  Never = "NEVER",
-  WhenChanged = "WHEN_CHANGED",
-  Force = "FORCE",
+  Never = 'NEVER',
+  WhenChanged = 'WHEN_CHANGED',
+  Force = 'FORCE',
 }
 
 export const deployFunction = async (
@@ -39,7 +39,7 @@ export const deployFunction = async (
     .then(publishVersion(client, description))
     .catch((err) => {
       if (err === Publish.Never) {
-        return Promise.resolve("");
+        return Promise.resolve('');
       }
       return Promise.reject(err);
     });
@@ -56,9 +56,9 @@ const publishVersion =
 
     return client.send(publishVersionCommand).then((newFunctionData) => {
       if (!newFunctionData.Version) {
-        throw "Publish version failed: Could not retrieve new version";
+        throw 'Publish version failed: Could not retrieve new version';
       }
-      console.log("Function published. Version", newFunctionData.Version);
+      console.log('Function published. Version', newFunctionData.Version);
       return newFunctionData.Version;
     });
   };
@@ -72,9 +72,9 @@ const deployCode =
       FunctionName: lastFunctionData.FunctionName,
       ZipFile: fileBuffer,
     });
-    console.log("Deploying function to Lambda...");
+    console.log('Deploying function to Lambda...');
     return client.send(updateCodeCommand).then((newFunctionData) => {
-      console.log("Function deployed. RevisionId", newFunctionData.RevisionId);
+      console.log('Function deployed. RevisionId', newFunctionData.RevisionId);
       return [lastFunctionData, newFunctionData];
     });
   };
@@ -99,17 +99,17 @@ const publishOrReject =
   };
 
 const checkFunction = (client: LambdaClient) => async (functionName: string) => {
-  console.log("Checking if function exists.");
+  console.log('Checking if function exists.');
   const checkFunctionCommand = new GetFunctionConfigurationCommand({
     FunctionName: functionName,
   });
   return client.send(checkFunctionCommand).then((response) => {
     console.log(
-      "Found function. Version",
+      'Found function. Version',
       response.Version,
-      "RevisionId",
+      'RevisionId',
       response.RevisionId,
-      "CodeSha256",
+      'CodeSha256',
       response.CodeSha256
     );
     return response;
@@ -117,12 +117,12 @@ const checkFunction = (client: LambdaClient) => async (functionName: string) => 
 };
 
 const readZipAsBuffer = async (path: string): Promise<Buffer> => {
-  console.log("Reading ZIP file...");
+  console.info('Reading ZIP file...');
   return fs
     .readFile(path)
     .then(Buffer.from)
     .then((fileBuffer: Buffer) => {
-      console.log("File read.");
+      console.log('File read.');
       return fileBuffer;
     });
 };

@@ -1,5 +1,5 @@
-import { addProxyToClient } from "aws-sdk-v3-proxy";
-import { ClientWithConfig } from "aws-sdk-v3-proxy/lib/src/types";
+import { addProxyToClient } from 'aws-sdk-v3-proxy';
+import { ClientWithConfig } from 'aws-sdk-v3-proxy/lib/src/types';
 
 export interface Config {
   enabled: boolean;

@@ -12,9 +12,9 @@ import {
   UpdateDistributionCommandOutput,
   GetDistributionCommandOutput,
   CloudFrontClientConfig,
-} from "@aws-sdk/client-cloudfront";
-import * as Auth from "./Auth";
-import * as Proxy from "./Proxy";
+} from '@aws-sdk/client-cloudfront';
+import * as Auth from './Auth';
+import * as Proxy from './Proxy';
 
 export interface Config {
   region: string;
@@ -45,16 +45,16 @@ export const deployLamdaEdgeFunction = async (
     .then(updateCacheBehaviorLambdaFunctionVersion(target, arnWithoutVersion, lambdaFunctionVersion))
     .then(deployDistributionConfig(distributionId, client))
     .then(() => {
-      console.log("New distribution config deployed!");
-      console.log("Waiting for deployment to be replicated to all edge nodes.");
+      console.log('New distribution config deployed!');
+      console.log('Waiting for deployment to be replicated to all edge nodes.');
       return checkStatus(distributionId, client, 100, 5000);
     })
     .then((deployed) => {
       if (deployed) {
-        console.log("Distribution was deployed successfully!");
+        console.log('Distribution was deployed successfully!');
         return true;
       } else {
-        console.log("Distribution is still not deployed. Giving up.");
+        console.log('Distribution is still not deployed. Giving up.');
         return false;
       }
     });
@@ -74,11 +74,11 @@ const checkStatus = async (
     const status: string =
       response && response.Distribution && response.Distribution.Status
         ? response.Distribution.Status
-        : "Could not read status";
-    if (status === "Deployed") {
+        : 'Could not read status';
+    if (status === 'Deployed') {
       return Promise.resolve(true);
     }
-    console.log("Distribution status:", status, "(Checking again in " + interval + "ms. " + tries + " tries left.)");
+    console.log('Distribution status:', status, '(Checking again in ' + interval + 'ms. ' + tries + ' tries left.)');
     return new Promise((resolve) =>
       setTimeout(() => resolve(checkStatus(distributionId, client, tries - 1, interval)), interval)
     );
@@ -158,7 +158,7 @@ const updateLambdaFunctionAssociation =
   (arnWithoutVersion: string, lambdaFunctionVersion: string) =>
   (item: LambdaFunctionAssociation): LambdaFunctionAssociation => {
     if (item.LambdaFunctionARN && item.LambdaFunctionARN.startsWith(arnWithoutVersion)) {
-      item.LambdaFunctionARN = arnWithoutVersion + ":" + lambdaFunctionVersion;
+      item.LambdaFunctionARN = arnWithoutVersion + ':' + lambdaFunctionVersion;
     }
     return item;
   };

@@ -1,6 +1,6 @@
-import { fromIni } from "@aws-sdk/credential-providers";
-import { SourceProfileInit } from "@aws-sdk/util-credentials";
-import { CredentialProvider } from "@aws-sdk/types";
+import { fromIni } from '@aws-sdk/credential-providers';
+import { SourceProfileInit } from '@aws-sdk/util-credentials';
+import { CredentialProvider } from '@aws-sdk/types';
 
 export interface Config {
   type: string;
@@ -8,6 +8,6 @@ export interface Config {
 }
 
 export const getCredentials = (config: Config): CredentialProvider => {
-  if (config.type === "fromIni") return fromIni(config.options);
-  throw "Authentication failed: Could not get credentials.";
+  if (config.type === 'fromIni') return fromIni(config.options);
+  throw 'Authentication failed: Could not get credentials.';
 };
